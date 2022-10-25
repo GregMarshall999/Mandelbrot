@@ -22,4 +22,13 @@ public class ComplexNumber
     public double getImaginary() {
         return imaginary;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj.getClass() == ComplexNumber.class)
+        {
+            return ((ComplexNumber)obj).real == this.real && ((ComplexNumber)obj).imaginary == this.imaginary;
+        }
+        return false;
+    }
 }

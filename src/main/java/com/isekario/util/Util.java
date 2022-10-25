@@ -2,6 +2,7 @@ package com.isekario.util;
 
 import com.isekario.Main;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,7 +108,30 @@ public final class Util {
         sequence.add(start);
 
         for (int i = 1; i < iterationsMax; i++) {
-            sequence.add(MandelUtil.MandelbrotSequence(sequence.get(i-1), constant));
+            sequence.add(MandelUtil.mandelbrotSequence(sequence.get(i-1), constant));
         }
+    }
+
+    /**
+     * Plots the pixel colors for the mandelbrot set
+     * @param pixels - pixel colors to plot
+     */
+    public static void plotMandelbrot(Color[][] pixels) {
+        ComplexNumber currentPosition;
+
+        for(int x = 0; x < Main.getWIDTH(); x++)
+            for(int y = 0; y < Main.getHEIGHT(); y++)
+            {
+                pixels[x][y] = Color.GRAY;
+
+                currentPosition = new ComplexNumber(fromScreenPosToCoords(x, true), fromScreenPosToCoords(y, false));
+
+                if(currentPosition.getReal() > -3 && currentPosition.getReal() < 3) {
+                    int colorValue = MandelUtil.escapeTimeAlgorithm(currentPosition, iterationsMax);
+
+                    if (colorValue == iterationsMax)
+                        pixels[x][y] = Color.BLACK;
+                }
+            }
     }
 }

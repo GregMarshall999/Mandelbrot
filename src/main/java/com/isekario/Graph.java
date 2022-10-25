@@ -1,6 +1,7 @@
 package com.isekario;
 
 import com.isekario.util.ComplexNumber;
+import com.isekario.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,12 @@ import static com.isekario.util.Util.*;
  */
 public class Graph extends JPanel implements MouseListener, MouseMotionListener {
 
+    private Color[][] pixels;
+
     public Graph() {
+        pixels = new Color[Main.getWIDTH()][Main.getHEIGHT()];
+        Util.plotMandelbrot(pixels);
+
         reCalculateSequence();
 
         addMouseListener(this);
@@ -27,9 +33,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         g.clearRect(0, 0, Main.getWIDTH(), Main.getHEIGHT());
         g.setFont(new Font("Arial", Font.PLAIN, 20));
 
-        g.setColor(Color.GRAY);
-        g.fillRect(0, 0, Main.getWIDTH(), Main.getHEIGHT());
-
+        drawMandelbrot(g);
         drawGraph(g);
         drawStableCircle(g);
         drawSequence(g);
@@ -102,6 +106,15 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
             g.fillOval(x-dotSize/2, y-dotSize/2, dotSize, dotSize);
         }
+    }
+
+    private void drawMandelbrot(Graphics g) {
+        for(int x = 0; x < pixels.length; x++)
+            for(int y = 0; y < pixels[x].length; y++)
+            {
+                g.setColor(pixels[x][y]);
+                g.drawRect(x, y, 1, 1);
+            }
     }
 
     @Override
