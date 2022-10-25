@@ -1,37 +1,19 @@
 package com.isekario;
 
+import com.isekario.util.ComplexNumber;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.List;
 
+import static com.isekario.util.Util.*;
+
+/**
+ * Screen element to display all operations for the mandelbrot set
+ */
 public class Graph extends JPanel implements MouseListener, MouseMotionListener {
-
-    private static int iterationsMax = 100;
-
-    private static List<ComplexNumber> iterations = new ArrayList<>();
-
-    private static boolean isXSelected = false; //clicked red dot
-    private static boolean isCSelected = false; //clicked green dot
-
-    private static int resolution = 10; //dot sizes
-
-    private static int interval = 100; //grid spacing
-    private static int intervalSize = 10;
-
-    private static int gridCenterX = Main.getWIDTH()/2;
-    private static int gridCenterY = Main.getHEIGHT()/2;
-
-    private static int numberOffsetX = -20; //number display X interval offset
-    private static int numberOffsetY = 30; //number display Y interval offset
-
-    private static int xPosX = gridCenterX;
-    private static int xPosY = gridCenterY;
-    private static int cPosX = gridCenterX-interval;
-    private static int cPosY = gridCenterY;
 
     public Graph() {
         reCalculateSequence();
@@ -55,111 +37,70 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         drawCPoint(g);
     }
 
+    /**
+     * Displays the 2D graph
+     * @param g -
+     */
     private void drawGraph(Graphics g) {
         g.setColor(Color.DARK_GRAY);
 
         //X,Y axes
-        g.drawLine(0, gridCenterY, Main.getWIDTH(), gridCenterY);
-        g.drawLine(gridCenterX, 0, gridCenterX, Main.getHEIGHT());
+        g.drawLine(0, gridCenterFocusY, Main.getWIDTH(), gridCenterFocusY);
+        g.drawLine(gridCenterFocusX, 0, gridCenterFocusX, Main.getHEIGHT());
 
         //X and Y intervals with numbers
         for (int i = -8; i < 9; i++) {
-            g.drawLine(gridCenterX + i*interval, gridCenterY - intervalSize, gridCenterX + i*interval, gridCenterY + intervalSize); //X
-            g.drawLine(gridCenterX - intervalSize, gridCenterY + i*interval, gridCenterX + intervalSize, gridCenterY + i*interval); //Y
+            g.drawLine(gridCenterFocusX + i*zoomLevel, gridCenterFocusY - intervalSize,
+                    gridCenterFocusX + i*zoomLevel, gridCenterFocusY + intervalSize); //X
+            g.drawLine(gridCenterFocusX - intervalSize, gridCenterFocusY + i*zoomLevel,
+                    gridCenterFocusX + intervalSize, gridCenterFocusY + i*zoomLevel); //Y
 
-            g.drawString(""+i, gridCenterX + i*interval + numberOffsetX, gridCenterY + numberOffsetY); //X
-            g.drawString(""+-i, gridCenterX + numberOffsetX, gridCenterY + i*interval + numberOffsetY); //Y
+            g.drawString(""+i, gridCenterFocusX + i*zoomLevel + numberOffsetX, gridCenterFocusY + numberOffsetY); //X
+            g.drawString(""+-i, gridCenterFocusX + numberOffsetX, gridCenterFocusY + i*zoomLevel + numberOffsetY); //Y
         }
     }
 
+    /**
+     * Draw the red point
+     * @param g -
+     */
     private void drawXPoint(Graphics g) {
         g.setColor(Color.RED);
-        g.fillOval(xPosX - resolution/2, xPosY - resolution/2, resolution, resolution);
+        g.fillOval(zPosX - dotSize/2, zPosY - dotSize/2, dotSize, dotSize);
         g.drawString(convertXToCoordsString(), 10, 30);
     }
 
+    /**
+     * Draw the green point
+     * @param g -
+     */
     private void drawCPoint(Graphics g) {
         g.setColor(Color.GREEN);
-        g.fillOval(cPosX - resolution/2, cPosY - resolution/2, resolution, resolution);
+        g.fillOval(cPosX - dotSize/2, cPosY - dotSize/2, dotSize, dotSize);
         g.drawString(convertCToCoordsString(), 10, 60);
     }
 
+    /**
+     * Draw stability boundary for C = 0
+     * @param g -
+     */
     private void drawStableCircle(Graphics g) {
         g.setColor(Color.BLACK);
-        g.drawOval(gridCenterX - interval, gridCenterY - interval, interval*2, interval*2);
+        g.drawOval(gridCenterFocusX - zoomLevel, gridCenterFocusY - zoomLevel, zoomLevel*2, zoomLevel*2);
     }
 
+    /**
+     * Draw all points in the sequence
+     * @param g -
+     */
     private void drawSequence(Graphics g) {
         g.setColor(Color.ORANGE);
 
-        for (ComplexNumber complex : iterations) {
+        for (ComplexNumber complex : sequence) {
             int x = fromCoordsToScreenPos(complex.getReal() ,true);
             int y = fromCoordsToScreenPos(complex.getImaginary(), false);
 
-            g.fillOval(x-resolution/2, y-resolution/2, resolution, resolution);
-        }
-    }
-
-    private String convertXToCoordsString() {
-        double x = fromScreenPosToCoords(xPosX, true);
-        double y = fromScreenPosToCoords(xPosY, false);
-
-        return "X= " + x + " / Y= " + y;
-    }
-
-    private String convertCToCoordsString() {
-        double x = fromScreenPosToCoords(cPosX, true);
-        double y = fromScreenPosToCoords(cPosY, false);
-
-        return "X= " + x + " / Y= " + y;
-    }
-
-    private double fromScreenPosToCoords(int screenPos, boolean xAxis) {
-        int unit, firstDec, secondDec;
-
-        double coord = 0;
-
-        if(xAxis)
-        {
-            unit = (screenPos - gridCenterX)/interval;
-            firstDec = ((screenPos - gridCenterX)/10)%10;
-            secondDec = ((screenPos - gridCenterX)/100)%100;
-        }
-        else
-        {
-            unit = (screenPos - gridCenterY)/interval;
-            firstDec = ((screenPos - gridCenterY)/10)%10;
-            secondDec = ((screenPos - gridCenterY)/100)%100;
-        }
-
-        coord+=unit;
-        coord+=((double)firstDec)/10;
-        coord+=((double)secondDec)/100;
-
-        return coord;
-    }
-
-    private int fromCoordsToScreenPos(double coord, boolean xAxis) {
-        if(xAxis)
-        {
-            return (int)(coord*100.0) + gridCenterX;
-        }
-        else
-        {
-            return (int)(coord*100.0) + gridCenterY;
-        }
-    }
-
-    private void reCalculateSequence() {
-        iterations.clear();
-
-        ComplexNumber start = new ComplexNumber(fromScreenPosToCoords(xPosX, true), fromScreenPosToCoords(xPosY, false));
-        ComplexNumber constant = new ComplexNumber(fromScreenPosToCoords(cPosX, true), fromScreenPosToCoords(cPosY, false));
-
-        iterations.add(start);
-
-        for (int i = 1; i < iterationsMax; i++) {
-            iterations.add(Mandelbrot.MandelbrotSequence(iterations.get(i-1), constant));
+            g.fillOval(x-dotSize/2, y-dotSize/2, dotSize, dotSize);
         }
     }
 
@@ -167,8 +108,8 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
     public void mouseDragged(MouseEvent e) {
         if (isXSelected)
         {
-            xPosX = e.getX();
-            xPosY = e.getY();
+            zPosX = e.getX();
+            zPosY = e.getY();
 
             reCalculateSequence();
 
@@ -199,15 +140,15 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
     @Override
     public void mousePressed(MouseEvent e) {
         //did we click the red dot
-        isXSelected =   e.getX() >= xPosX - resolution/2 &&
-                        e.getX() <= xPosX + resolution/2 &&
-                        e.getY() >= xPosY - resolution/2 &&
-                        e.getY() <= xPosY + resolution/2;
+        isXSelected =   e.getX() >= zPosX - dotSize/2 &&
+                        e.getX() <= zPosX + dotSize/2 &&
+                        e.getY() >= zPosY - dotSize/2 &&
+                        e.getY() <= zPosY + dotSize/2;
 
-        isCSelected =   e.getX() >= cPosX - resolution/2 &&
-                        e.getX() <= cPosX + resolution/2 &&
-                        e.getY() >= cPosY - resolution/2 &&
-                        e.getY() <= cPosY + resolution/2;
+        isCSelected =   e.getX() >= cPosX - dotSize/2 &&
+                        e.getX() <= cPosX + dotSize/2 &&
+                        e.getY() >= cPosY - dotSize/2 &&
+                        e.getY() <= cPosY + dotSize/2;
     }
 
     @Override

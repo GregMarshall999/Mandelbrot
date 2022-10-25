@@ -2,8 +2,12 @@ package com.isekario;
 
 import javax.swing.*;
 
+/**
+ * This program attempts to show the incredible beauty of the mathematical world and our encounter with the mandelbrot set
+ */
 public class Main extends JFrame {
 
+    //Screen dimensions
     private static final int WIDTH = 1600;
     private static final int HEIGHT = 900;
 
