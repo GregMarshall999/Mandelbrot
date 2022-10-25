@@ -12,20 +12,22 @@ import java.util.List;
 public final class Util {
 
     //region fields
-    public static int iterationsMax = 100; //how deep we go in the mandelbrot set
+    public static int iterationsMax = 300; //how deep we go in the mandelbrot set
 
     public static List<ComplexNumber> sequence = new ArrayList<>(); //The sequence of complex numbers
 
     //Screen parameters
     public static int dotSize = 10;
-    public static int zoomLevel = 100;
+    public static int zoomLevel = 5000;
     public static final int intervalSize = 10; //Notch height for X and width for Y
     public static final int numberOffsetX = -20;
     public static final int numberOffsetY = 30;
+    public static int xOffset = -800;
+    public static int yOffset = 0;
 
     //The center point we are looking at on the screen
-    public static int gridCenterFocusX = Main.getWIDTH()/2;
-    public static int gridCenterFocusY = Main.getHEIGHT()/2;
+    public static int gridCenterFocusX = Main.getWIDTH()/2 + xOffset;
+    public static int gridCenterFocusY = Main.getHEIGHT()/2 + yOffset;
 
     //red and green dot initial positions
     public static int zPosX = gridCenterFocusX;
@@ -126,12 +128,56 @@ public final class Util {
 
                 currentPosition = new ComplexNumber(fromScreenPosToCoords(x, true), fromScreenPosToCoords(y, false));
 
-                if(currentPosition.getReal() > -3 && currentPosition.getReal() < 3) {
-                    int colorValue = MandelUtil.escapeTimeAlgorithm(currentPosition, iterationsMax);
+                int colorValue = MandelUtil.escapeTimeAlgorithm(new ComplexNumber(fromScreenPosToCoords(zPosX, true), fromScreenPosToCoords(zPosY, false)), currentPosition, iterationsMax);
 
-                    if (colorValue == iterationsMax)
-                        pixels[x][y] = Color.BLACK;
-                }
+                pixels[x][y] = Color.getHSBColor((colorValue*1.0f)/iterationsMax, 1.0f, 1.0f);
+
+                if (colorValue == iterationsMax)
+                    pixels[x][y] = Color.BLACK;
             }
+    }
+
+    public static void updateScreenValues() {
+
+        if(xOffset < 800)
+        {
+            gridCenterFocusX += Main.getWIDTH()/2 - xOffset;
+            zPosX += Main.getWIDTH()/2 - xOffset;
+            cPosX += Main.getWIDTH()/2 - xOffset;
+
+            if(yOffset < 800)
+            {
+                gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
+                zPosY += Main.getHEIGHT()/2 - yOffset;
+                cPosY += Main.getHEIGHT()/2 - yOffset;
+            }
+            else
+            {
+                gridCenterFocusY -= yOffset - Main.getHEIGHT()/2;
+                zPosY -= yOffset - Main.getHEIGHT()/2;
+                cPosY -= yOffset - Main.getHEIGHT()/2;
+            }
+        }
+        else
+        {
+            gridCenterFocusX -= xOffset - Main.getWIDTH()/2;
+            zPosX -= xOffset - Main.getWIDTH()/2;
+            cPosX -= xOffset - Main.getWIDTH()/2;
+
+            if(yOffset < 800)
+            {
+                gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
+                zPosY += Main.getHEIGHT()/2 - yOffset;
+                cPosY += Main.getHEIGHT()/2 - yOffset;
+            }
+            else
+            {
+                gridCenterFocusY -= yOffset - Main.getHEIGHT()/2;
+                zPosY -= yOffset - Main.getHEIGHT()/2;
+                cPosY -= yOffset - Main.getHEIGHT()/2;
+            }
+        }
+
+        reCalculateSequence();
     }
 }

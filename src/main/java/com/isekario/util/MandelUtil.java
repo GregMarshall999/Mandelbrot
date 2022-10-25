@@ -55,12 +55,12 @@ public class MandelUtil {
      * Checks if the value of C is part of the mandelbrot set
      * Depending on how deep we go, we may reach different certainties as to being part of the set or not
      * @param constant - Point we wish to test
-     * @param iterationMax - How deep we go down the rabit hole
+     * @param iterationMax - How deep we go down the rabbit hole
      * @return - How certain we are that the sequence is stable
      */
-    public static int escapeTimeAlgorithm(ComplexNumber constant, int iterationMax)
+    public static int escapeTimeAlgorithm(ComplexNumber Z, ComplexNumber constant, int iterationMax)
     {
-        ComplexNumber nextIteration = mandelbrotSequence(new ComplexNumber(0.0, 0.0), constant);
+        ComplexNumber nextIteration = mandelbrotSequence(Z, constant);
         int i = 0;
 
         while (i < iterationMax){

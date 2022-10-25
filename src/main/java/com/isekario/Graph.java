@@ -35,9 +35,9 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
         drawMandelbrot(g);
         drawGraph(g);
-        drawStableCircle(g);
+        //drawStableCircle(g);
         drawSequence(g);
-        drawXPoint(g);
+        drawZPoint(g);
         drawCPoint(g);
     }
 
@@ -68,8 +68,8 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
      * Draw the red point
      * @param g -
      */
-    private void drawXPoint(Graphics g) {
-        g.setColor(Color.RED);
+    private void drawZPoint(Graphics g) {
+        g.setColor(Color.MAGENTA);
         g.fillOval(zPosX - dotSize/2, zPosY - dotSize/2, dotSize, dotSize);
         g.drawString(convertXToCoordsString(), 10, 30);
     }
@@ -125,10 +125,11 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
             zPosY = e.getY();
 
             reCalculateSequence();
+            Util.plotMandelbrot(pixels);
 
+            //paintImmediately(0, 0, Main.getWIDTH(), Main.getHEIGHT());
             repaint();
         }
-
         if(isCSelected)
         {
             cPosX = e.getX();
@@ -136,6 +137,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
             reCalculateSequence();
 
+            //paintImmediately(0, 0, Main.getWIDTH(), Main.getHEIGHT());
             repaint();
         }
     }
@@ -162,6 +164,15 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
                         e.getX() <= cPosX + dotSize/2 &&
                         e.getY() >= cPosY - dotSize/2 &&
                         e.getY() <= cPosY + dotSize/2;
+
+        xOffset = e.getX();
+        yOffset = e.getY();
+
+        if(!isCSelected && !isXSelected) {
+            updateScreenValues();
+            Util.plotMandelbrot(pixels);
+            repaint();
+        }
     }
 
     @Override
