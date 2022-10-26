@@ -1,5 +1,6 @@
 package com.isekario.util;
 
+import com.isekario.Graph;
 import com.isekario.Main;
 
 import java.awt.*;
@@ -11,18 +12,20 @@ import java.util.List;
  */
 public final class Util {
 
+    public static Color[][] pixels;
+
     //region fields
-    public static int iterationsMax = 300; //how deep we go in the mandelbrot set
+    public static int iterationsMax = 1; //how deep we go in the mandelbrot set
 
     public static List<ComplexNumber> sequence = new ArrayList<>(); //The sequence of complex numbers
 
     //Screen parameters
     public static int dotSize = 10;
-    public static int zoomLevel = 5000;
+    public static int zoomValue = 100;
     public static final int intervalSize = 10; //Notch height for X and width for Y
     public static final int numberOffsetX = -20;
     public static final int numberOffsetY = 30;
-    public static int xOffset = -800;
+    public static int xOffset = 0;
     public static int yOffset = 0;
 
     //The center point we are looking at on the screen
@@ -32,7 +35,7 @@ public final class Util {
     //red and green dot initial positions
     public static int zPosX = gridCenterFocusX;
     public static int zPosY = gridCenterFocusY;
-    public static int cPosX = gridCenterFocusX - zoomLevel; //at -1
+    public static int cPosX = gridCenterFocusX - zoomValue; //at -1
     public static int cPosY = gridCenterFocusY;
     public static boolean isXSelected = false; //clicked the red dot
     public static boolean isCSelected = false; //clicked the green dot
@@ -71,11 +74,11 @@ public final class Util {
 
         if(xAxis)
         {
-            coord = (coord - gridCenterFocusX) / zoomLevel;
+            coord = (coord - gridCenterFocusX) / zoomValue;
         }
         else
         {
-            coord = (coord - gridCenterFocusY) / zoomLevel;
+            coord = (coord - gridCenterFocusY) / zoomValue;
         }
 
         return coord;
@@ -90,11 +93,11 @@ public final class Util {
     public static int fromCoordsToScreenPos(double coord, boolean xAxis) {
         if(xAxis)
         {
-            return (int)(coord*zoomLevel) + gridCenterFocusX;
+            return (int)(coord* zoomValue) + gridCenterFocusX;
         }
         else
         {
-            return (int)(coord*zoomLevel) + gridCenterFocusY;
+            return (int)(coord* zoomValue) + gridCenterFocusY;
         }
     }
 
@@ -137,7 +140,25 @@ public final class Util {
             }
     }
 
-    public static void updateScreenValues() {
+    /**
+     * Updates the iteration limit to the new value
+     * @param changeValue - change for the iteration limit
+     * @param graph - graphic context to update
+     */
+    public static void changeIterations(int changeValue, Graph graph) {
+        iterationsMax += changeValue;
+
+        if(iterationsMax <= 0)
+            iterationsMax = 1;
+
+        updateScreen(graph);
+    }
+
+    /**
+     * Centers the screen display to the clicked position
+     * @param graph - Graphic context to update
+     */
+    public static void shiftScreenToClick(Graph graph) {
 
         if(xOffset < 800)
         {
@@ -145,18 +166,6 @@ public final class Util {
             zPosX += Main.getWIDTH()/2 - xOffset;
             cPosX += Main.getWIDTH()/2 - xOffset;
 
-            if(yOffset < 800)
-            {
-                gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
-                zPosY += Main.getHEIGHT()/2 - yOffset;
-                cPosY += Main.getHEIGHT()/2 - yOffset;
-            }
-            else
-            {
-                gridCenterFocusY -= yOffset - Main.getHEIGHT()/2;
-                zPosY -= yOffset - Main.getHEIGHT()/2;
-                cPosY -= yOffset - Main.getHEIGHT()/2;
-            }
         }
         else
         {
@@ -164,20 +173,34 @@ public final class Util {
             zPosX -= xOffset - Main.getWIDTH()/2;
             cPosX -= xOffset - Main.getWIDTH()/2;
 
-            if(yOffset < 800)
-            {
-                gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
-                zPosY += Main.getHEIGHT()/2 - yOffset;
-                cPosY += Main.getHEIGHT()/2 - yOffset;
-            }
-            else
-            {
-                gridCenterFocusY -= yOffset - Main.getHEIGHT()/2;
-                zPosY -= yOffset - Main.getHEIGHT()/2;
-                cPosY -= yOffset - Main.getHEIGHT()/2;
-            }
+        }
+        if(yOffset < 800)
+        {
+            gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
+            zPosY += Main.getHEIGHT()/2 - yOffset;
+            cPosY += Main.getHEIGHT()/2 - yOffset;
+        }
+        else
+        {
+            gridCenterFocusY -= yOffset - Main.getHEIGHT()/2;
+            zPosY -= yOffset - Main.getHEIGHT()/2;
+            cPosY -= yOffset - Main.getHEIGHT()/2;
         }
 
+        updateScreen(graph);
+    }
+
+    /**
+     * Refreshes the display
+     * @param graph - Graphic context to update
+     */
+    private static void updateScreen(Graph graph) {
         reCalculateSequence();
+        plotMandelbrot(pixels);
+        graph.repaint();
+    }
+
+    public static void zoomScreen(int zoom, Graph graph) {
+
     }
 }

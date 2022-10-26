@@ -5,9 +5,7 @@ import com.isekario.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 
 import static com.isekario.util.Util.*;
 
@@ -16,14 +14,36 @@ import static com.isekario.util.Util.*;
  */
 public class Graph extends JPanel implements MouseListener, MouseMotionListener {
 
-    private Color[][] pixels;
+
+    private Button increaseIterations, decreaseIterations, zoomIn, zoomOut;
 
     public Graph() {
+        setLayout(null);
+
         pixels = new Color[Main.getWIDTH()][Main.getHEIGHT()];
-        Util.plotMandelbrot(pixels);
+        plotMandelbrot(pixels);
+
+        increaseIterations = new Button("Increase Iterations");
+        decreaseIterations = new Button("Decrease Iterations");
+        zoomIn = new Button("Zoom in");
+        zoomOut = new Button("Zoom out");
+
+        increaseIterations.setBounds(Main.getWIDTH() - 300, 40, 150, 30);
+        decreaseIterations.setBounds(Main.getWIDTH() - 300, 70, 150, 30);
+        zoomIn.setBounds(Main.getWIDTH()/2 - 100, Main.getHEIGHT() - 70, 100, 20);
+        zoomOut.setBounds(Main.getWIDTH()/2, Main.getHEIGHT() - 70, 100, 20);
+
+        increaseIterations.addActionListener(e -> changeIterations(1, Graph.this));
+        decreaseIterations.addActionListener(e -> changeIterations(-1, Graph.this));
+        zoomIn.addActionListener(e -> zoomScreen(zoomValue, Graph.this));
+        zoomOut.addActionListener(e -> zoomScreen(-zoomValue /2, Graph.this));
 
         reCalculateSequence();
 
+        add(increaseIterations);
+        add(decreaseIterations);
+        add(zoomIn);
+        add(zoomOut);
         addMouseListener(this);
         addMouseMotionListener(this);
     }
@@ -37,8 +57,11 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         drawGraph(g);
         //drawStableCircle(g);
         drawSequence(g);
+
+        //UI
         drawZPoint(g);
         drawCPoint(g);
+        drawIterationCount(g);
     }
 
     /**
@@ -54,13 +77,13 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
         //X and Y intervals with numbers
         for (int i = -8; i < 9; i++) {
-            g.drawLine(gridCenterFocusX + i*zoomLevel, gridCenterFocusY - intervalSize,
-                    gridCenterFocusX + i*zoomLevel, gridCenterFocusY + intervalSize); //X
-            g.drawLine(gridCenterFocusX - intervalSize, gridCenterFocusY + i*zoomLevel,
-                    gridCenterFocusX + intervalSize, gridCenterFocusY + i*zoomLevel); //Y
+            g.drawLine(gridCenterFocusX + i* zoomValue, gridCenterFocusY - intervalSize,
+                    gridCenterFocusX + i* zoomValue, gridCenterFocusY + intervalSize); //X
+            g.drawLine(gridCenterFocusX - intervalSize, gridCenterFocusY + i* zoomValue,
+                    gridCenterFocusX + intervalSize, gridCenterFocusY + i* zoomValue); //Y
 
-            g.drawString(""+i, gridCenterFocusX + i*zoomLevel + numberOffsetX, gridCenterFocusY + numberOffsetY); //X
-            g.drawString(""+-i, gridCenterFocusX + numberOffsetX, gridCenterFocusY + i*zoomLevel + numberOffsetY); //Y
+            g.drawString(""+i, gridCenterFocusX + i* zoomValue + numberOffsetX, gridCenterFocusY + numberOffsetY); //X
+            g.drawString(""+-i, gridCenterFocusX + numberOffsetX, gridCenterFocusY + i* zoomValue + numberOffsetY); //Y
         }
     }
 
@@ -69,7 +92,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
      * @param g -
      */
     private void drawZPoint(Graphics g) {
-        g.setColor(Color.MAGENTA);
+        g.setColor(Color.BLUE);
         g.fillOval(zPosX - dotSize/2, zPosY - dotSize/2, dotSize, dotSize);
         g.drawString(convertXToCoordsString(), 10, 30);
     }
@@ -90,7 +113,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
      */
     private void drawStableCircle(Graphics g) {
         g.setColor(Color.BLACK);
-        g.drawOval(gridCenterFocusX - zoomLevel, gridCenterFocusY - zoomLevel, zoomLevel*2, zoomLevel*2);
+        g.drawOval(gridCenterFocusX - zoomValue, gridCenterFocusY - zoomValue, zoomValue *2, zoomValue *2);
     }
 
     /**
@@ -115,6 +138,11 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
                 g.setColor(pixels[x][y]);
                 g.drawRect(x, y, 1, 1);
             }
+    }
+
+    private void drawIterationCount(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.drawString(iterationsMax + " iterations", Main.getWIDTH() - 300, 30);
     }
 
     @Override
@@ -169,9 +197,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         yOffset = e.getY();
 
         if(!isCSelected && !isXSelected) {
-            updateScreenValues();
-            Util.plotMandelbrot(pixels);
-            repaint();
+            shiftScreenToClick(this);
         }
     }
 
