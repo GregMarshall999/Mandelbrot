@@ -27,6 +27,7 @@ public final class Util {
     public static final int numberOffsetY = 30;
     public static int xOffset = 0;
     public static int yOffset = 0;
+    public static ComplexNumber focusedPoint = new ComplexNumber(0, 0);
 
     //The center point we are looking at on the screen
     public static int gridCenterFocusX = Main.getWIDTH()/2 + xOffset;
@@ -69,7 +70,7 @@ public final class Util {
      * @param xAxis - axis in which to convert
      * @return - grid coordinate of the point
      */
-    private static double fromScreenPosToCoords(int screenPos, boolean xAxis) {
+    public static double fromScreenPosToCoords(int screenPos, boolean xAxis) {
         double coord = screenPos;
 
         if(xAxis)
@@ -107,8 +108,8 @@ public final class Util {
     public static void reCalculateSequence() {
         sequence.clear();
 
-        ComplexNumber start = new ComplexNumber(fromScreenPosToCoords(zPosX, true), fromScreenPosToCoords(zPosY, false));
-        ComplexNumber constant = new ComplexNumber(fromScreenPosToCoords(cPosX, true), fromScreenPosToCoords(cPosY, false));
+        ComplexNumber start = new ComplexNumber(fromScreenPosToCoords(zPosX, true), -fromScreenPosToCoords(zPosY, false));
+        ComplexNumber constant = new ComplexNumber(fromScreenPosToCoords(cPosX, true), -fromScreenPosToCoords(cPosY, false));
 
         sequence.add(start);
 
@@ -160,7 +161,7 @@ public final class Util {
      */
     public static void shiftScreenToClick(Graph graph) {
 
-        if(xOffset < 800)
+        if(xOffset < Main.getWIDTH()/2)
         {
             gridCenterFocusX += Main.getWIDTH()/2 - xOffset;
             zPosX += Main.getWIDTH()/2 - xOffset;
@@ -174,7 +175,7 @@ public final class Util {
             cPosX -= xOffset - Main.getWIDTH()/2;
 
         }
-        if(yOffset < 800)
+        if(yOffset < Main.getHEIGHT()/2)
         {
             gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
             zPosY += Main.getHEIGHT()/2 - yOffset;
@@ -200,7 +201,17 @@ public final class Util {
         graph.repaint();
     }
 
+    /**
+     * Zooms into the set
+     * @param zoom - zoom amount
+     * @param graph - graphic context to update
+     */
     public static void zoomScreen(int zoom, Graph graph) {
+        zoomValue += zoom;
 
+        xOffset = fromCoordsToScreenPos(focusedPoint.getReal(), true);
+        yOffset = fromCoordsToScreenPos(-focusedPoint.getImaginary(), false);
+
+        shiftScreenToClick(graph);
     }
 }

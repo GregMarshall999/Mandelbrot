@@ -31,4 +31,9 @@ public class ComplexNumber
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "R: "+real+" I: "+imaginary;
+    }
 }

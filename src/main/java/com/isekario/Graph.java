@@ -14,19 +14,16 @@ import static com.isekario.util.Util.*;
  */
 public class Graph extends JPanel implements MouseListener, MouseMotionListener {
 
-
-    private Button increaseIterations, decreaseIterations, zoomIn, zoomOut;
-
     public Graph() {
         setLayout(null);
 
         pixels = new Color[Main.getWIDTH()][Main.getHEIGHT()];
         plotMandelbrot(pixels);
 
-        increaseIterations = new Button("Increase Iterations");
-        decreaseIterations = new Button("Decrease Iterations");
-        zoomIn = new Button("Zoom in");
-        zoomOut = new Button("Zoom out");
+        Button increaseIterations = new Button("Increase Iterations");
+        Button decreaseIterations = new Button("Decrease Iterations");
+        Button zoomIn = new Button("Zoom in");
+        Button zoomOut = new Button("Zoom out");
 
         increaseIterations.setBounds(Main.getWIDTH() - 300, 40, 150, 30);
         decreaseIterations.setBounds(Main.getWIDTH() - 300, 70, 150, 30);
@@ -55,7 +52,6 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
         drawMandelbrot(g);
         drawGraph(g);
-        //drawStableCircle(g);
         drawSequence(g);
 
         //UI
@@ -105,15 +101,6 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         g.setColor(Color.GREEN);
         g.fillOval(cPosX - dotSize/2, cPosY - dotSize/2, dotSize, dotSize);
         g.drawString(convertCToCoordsString(), 10, 60);
-    }
-
-    /**
-     * Draw stability boundary for C = 0
-     * @param g -
-     */
-    private void drawStableCircle(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.drawOval(gridCenterFocusX - zoomValue, gridCenterFocusY - zoomValue, zoomValue *2, zoomValue *2);
     }
 
     /**
@@ -197,6 +184,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         yOffset = e.getY();
 
         if(!isCSelected && !isXSelected) {
+            focusedPoint = new ComplexNumber(fromScreenPosToCoords(e.getX(), true), -fromScreenPosToCoords(e.getY(), false));
             shiftScreenToClick(this);
         }
     }
