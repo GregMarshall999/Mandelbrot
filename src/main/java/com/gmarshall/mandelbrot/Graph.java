@@ -1,7 +1,6 @@
 package com.gmarshall.mandelbrot;
 
 import com.gmarshall.mandelbrot.util.ComplexNumber;
-import com.gmarshall.mandelbrot.util.Util;
 
 import javax.swing.JPanel;
 
@@ -9,6 +8,9 @@ import java.awt.Button;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.TextField;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -22,29 +24,45 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
     public Graph() {
 
+        TextField iterationChange = new TextField("1");
+        iterationChange.setBounds(SCREEN_WIDTH - 145, 55, 50, 20);
+        iterationChange.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE && iterationChange.getText().length() == 1)
+                {
+                    iterationChange.setEditable(false);
+                    iterationChange.setText("1");
+                }
+                else
+                    iterationChange.setEditable(e.getKeyChar() >= '0' && e.getKeyChar() <= '9' || e.getKeyCode() == KeyEvent.VK_BACK_SPACE);
+            }
+        });
+
         //region Buttons
         Button increaseIterations = new Button("Increase Iterations");
         Button decreaseIterations = new Button("Decrease Iterations");
         Button zoomIn = new Button("Zoom in");
         Button zoomOut = new Button("Zoom out");
 
-        increaseIterations.setBounds(Util.SCREEN_WIDTH - 300, 40, 150, 30);
-        decreaseIterations.setBounds(Util.SCREEN_WIDTH - 300, 70, 150, 30);
-        zoomIn.setBounds(Util.SCREEN_WIDTH /2 - 100, Util.SCREEN_HEIGHT - 70, 100, 20);
-        zoomOut.setBounds(Util.SCREEN_WIDTH /2, Util.SCREEN_HEIGHT - 70, 100, 20);
+        increaseIterations.setBounds(SCREEN_WIDTH - 300, 40, 150, 30);
+        decreaseIterations.setBounds(SCREEN_WIDTH - 300, 70, 150, 30);
+        zoomIn.setBounds(SCREEN_WIDTH /2 - 100, SCREEN_HEIGHT - 70, 100, 20);
+        zoomOut.setBounds(SCREEN_WIDTH /2, SCREEN_HEIGHT - 70, 100, 20);
 
-        increaseIterations.addActionListener(e -> changeIterations(1, Graph.this));
-        decreaseIterations.addActionListener(e -> changeIterations(-1, Graph.this));
+        increaseIterations.addActionListener(e -> changeIterations(Integer.parseInt(iterationChange.getText()), Graph.this));
+        decreaseIterations.addActionListener(e -> changeIterations(-Integer.parseInt(iterationChange.getText()), Graph.this));
         zoomIn.addActionListener(e -> zoomScreen(zoomValue, Graph.this));
         zoomOut.addActionListener(e -> zoomScreen(-zoomValue /2, Graph.this));
         //endregion
 
-        pixels = new Color[Util.SCREEN_WIDTH][Util.SCREEN_WIDTH];
+        pixels = new Color[SCREEN_WIDTH][SCREEN_WIDTH];
 
         plotMandelbrot(pixels);
         reCalculateSequence();
 
         setLayout(null);
+        add(iterationChange);
         add(increaseIterations);
         add(decreaseIterations);
         add(zoomIn);
@@ -55,7 +73,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void paint(Graphics g) {
-        g.clearRect(0, 0, Util.SCREEN_WIDTH, Util.SCREEN_HEIGHT);
+        g.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         g.setFont(new Font("Arial", Font.PLAIN, 20));
 
         drawMandelbrot(g);
@@ -78,8 +96,8 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         g.setColor(Color.DARK_GRAY);
 
         //X,Y axes
-        g.drawLine(0, gridCenterY, Util.SCREEN_WIDTH, gridCenterY);
-        g.drawLine(gridCenterX, 0, gridCenterX, Util.SCREEN_HEIGHT);
+        g.drawLine(0, gridCenterY, SCREEN_WIDTH, gridCenterY);
+        g.drawLine(gridCenterX, 0, gridCenterX, SCREEN_HEIGHT);
 
         //X and Y intervals with numbers
         for (int i = -8; i < 9; i++) {
@@ -119,7 +137,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
      */
     private void drawIterationCount(Graphics g) {
         g.setColor(Color.WHITE);
-        g.drawString(iterationsMax + " iterations", Util.SCREEN_WIDTH - 300, 30);
+        g.drawString(iterationsMax + " iterations", SCREEN_WIDTH - 300, 30);
     }
 
     /**
@@ -163,7 +181,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
             zPosY = e.getY();
 
             reCalculateSequence();
-            Util.plotMandelbrot(pixels);
+            plotMandelbrot(pixels);
 
             repaint();
         }
