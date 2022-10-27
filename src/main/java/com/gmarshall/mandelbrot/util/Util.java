@@ -1,46 +1,45 @@
-package com.isekario.util;
+package com.gmarshall.mandelbrot.util;
 
-import com.isekario.Graph;
-import com.isekario.Main;
+import com.gmarshall.mandelbrot.Graph;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Color;
 
 /**
  * Container class for program parameters
  */
 public final class Util {
 
-    public static Color[][] pixels;
-
     //region fields
-    public static int iterationsMax = 1; //how deep we go in the mandelbrot set
 
-    public static List<ComplexNumber> sequence = new ArrayList<>(); //The sequence of complex numbers
+    public static Color[][] pixels; //Mandelbrot pixels
+
+    public static int iterationsMax = 1; //how deep we go in the mandelbrot set
+    public static ComplexNumber[] sequence = new ComplexNumber[iterationsMax]; //The sequence of complex numbers
 
     //Screen parameters
-    public static int dotSize = 10;
-    public static int zoomValue = 100;
+    public static final int SCREEN_WIDTH = 1600;
+    public static final int SCREEN_HEIGHT = 900;
     public static final int intervalSize = 10; //Notch height for X and width for Y
     public static final int numberOffsetX = -20;
     public static final int numberOffsetY = 30;
+    public static int dotSize = 10;
+    public static int zoomValue = 100; //ie how many pixels between grid units
     public static int xOffset = 0;
     public static int yOffset = 0;
-    public static ComplexNumber focusedPoint = new ComplexNumber(0, 0);
-
-    //The center point we are looking at on the screen
-    public static int gridCenterFocusX = Main.getWIDTH()/2 + xOffset;
-    public static int gridCenterFocusY = Main.getHEIGHT()/2 + yOffset;
+    public static int gridCenterX = SCREEN_WIDTH /2 + xOffset;
+    public static int gridCenterY = SCREEN_HEIGHT /2 + yOffset;
+    public static ComplexNumber focusedPoint = new ComplexNumber(0, 0); //The center point we are looking at on the screen
 
     //red and green dot initial positions
-    public static int zPosX = gridCenterFocusX;
-    public static int zPosY = gridCenterFocusY;
-    public static int cPosX = gridCenterFocusX - zoomValue; //at -1
-    public static int cPosY = gridCenterFocusY;
+    public static int zPosX = gridCenterX;
+    public static int zPosY = gridCenterY;
+    public static int cPosX = gridCenterX - zoomValue; //at -1
+    public static int cPosY = gridCenterY;
     public static boolean isXSelected = false; //clicked the red dot
     public static boolean isCSelected = false; //clicked the green dot
     //endregion
+
+    //region position conversion
 
     /**
      * Generates a string for Z position on the graph
@@ -75,11 +74,11 @@ public final class Util {
 
         if(xAxis)
         {
-            coord = (coord - gridCenterFocusX) / zoomValue;
+            coord = (coord - gridCenterX) / zoomValue;
         }
         else
         {
-            coord = (coord - gridCenterFocusY) / zoomValue;
+            coord = (coord - gridCenterY) / zoomValue;
         }
 
         return coord;
@@ -94,27 +93,29 @@ public final class Util {
     public static int fromCoordsToScreenPos(double coord, boolean xAxis) {
         if(xAxis)
         {
-            return (int)(coord* zoomValue) + gridCenterFocusX;
+            return (int)(coord* zoomValue) + gridCenterX;
         }
         else
         {
-            return (int)(coord* zoomValue) + gridCenterFocusY;
+            return (int)(coord* zoomValue) + gridCenterY;
         }
     }
+
+    //endregion
 
     /**
      * Updates the sequence list with new values from the new position of C and Z
      */
     public static void reCalculateSequence() {
-        sequence.clear();
+        sequence = new ComplexNumber[iterationsMax];
 
         ComplexNumber start = new ComplexNumber(fromScreenPosToCoords(zPosX, true), -fromScreenPosToCoords(zPosY, false));
         ComplexNumber constant = new ComplexNumber(fromScreenPosToCoords(cPosX, true), -fromScreenPosToCoords(cPosY, false));
 
-        sequence.add(start);
+        sequence[0] = start;
 
         for (int i = 1; i < iterationsMax; i++) {
-            sequence.add(MandelUtil.mandelbrotSequence(sequence.get(i-1), constant));
+            sequence[i] = MandelUtil.mandelbrotSequence(sequence[i-1], constant);
         }
     }
 
@@ -125,8 +126,8 @@ public final class Util {
     public static void plotMandelbrot(Color[][] pixels) {
         ComplexNumber currentPosition;
 
-        for(int x = 0; x < Main.getWIDTH(); x++)
-            for(int y = 0; y < Main.getHEIGHT(); y++)
+        for(int x = 0; x < SCREEN_WIDTH; x++)
+            for(int y = 0; y < SCREEN_HEIGHT; y++)
             {
                 pixels[x][y] = Color.GRAY;
 
@@ -161,31 +162,29 @@ public final class Util {
      */
     public static void shiftScreenToClick(Graph graph) {
 
-        if(xOffset < Main.getWIDTH()/2)
+        if(xOffset < SCREEN_WIDTH /2)
         {
-            gridCenterFocusX += Main.getWIDTH()/2 - xOffset;
-            zPosX += Main.getWIDTH()/2 - xOffset;
-            cPosX += Main.getWIDTH()/2 - xOffset;
-
+            gridCenterX += SCREEN_WIDTH /2 - xOffset;
+            zPosX += SCREEN_WIDTH /2 - xOffset;
+            cPosX += SCREEN_WIDTH /2 - xOffset;
         }
         else
         {
-            gridCenterFocusX -= xOffset - Main.getWIDTH()/2;
-            zPosX -= xOffset - Main.getWIDTH()/2;
-            cPosX -= xOffset - Main.getWIDTH()/2;
-
+            gridCenterX -= xOffset - SCREEN_WIDTH /2;
+            zPosX -= xOffset - SCREEN_WIDTH /2;
+            cPosX -= xOffset - SCREEN_WIDTH /2;
         }
-        if(yOffset < Main.getHEIGHT()/2)
+        if(yOffset < SCREEN_HEIGHT /2)
         {
-            gridCenterFocusY += Main.getHEIGHT()/2 - yOffset;
-            zPosY += Main.getHEIGHT()/2 - yOffset;
-            cPosY += Main.getHEIGHT()/2 - yOffset;
+            gridCenterY += SCREEN_HEIGHT /2 - yOffset;
+            zPosY += SCREEN_HEIGHT /2 - yOffset;
+            cPosY += SCREEN_HEIGHT /2 - yOffset;
         }
         else
         {
-            gridCenterFocusY -= yOffset - Main.getHEIGHT()/2;
-            zPosY -= yOffset - Main.getHEIGHT()/2;
-            cPosY -= yOffset - Main.getHEIGHT()/2;
+            gridCenterY -= yOffset - SCREEN_HEIGHT /2;
+            zPosY -= yOffset - SCREEN_HEIGHT /2;
+            cPosY -= yOffset - SCREEN_HEIGHT /2;
         }
 
         updateScreen(graph);

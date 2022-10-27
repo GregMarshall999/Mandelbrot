@@ -1,4 +1,4 @@
-package com.isekario.util;
+package com.gmarshall.mandelbrot.util;
 
 /**
  * Complex number with the form (x+iy)

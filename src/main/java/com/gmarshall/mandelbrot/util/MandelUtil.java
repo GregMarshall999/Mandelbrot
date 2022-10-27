@@ -1,4 +1,4 @@
-package com.isekario.util;
+package com.gmarshall.mandelbrot.util;
 
 /*
  *
@@ -23,7 +23,7 @@ package com.isekario.util;
 /**
  * Contains the mandelbrot sequence operation
  */
-public class MandelUtil {
+public final class MandelUtil {
 
     /**
      * Generates the next complex number in the sequence following this rule:

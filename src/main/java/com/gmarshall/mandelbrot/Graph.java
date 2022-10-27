@@ -1,13 +1,19 @@
-package com.isekario;
+package com.gmarshall.mandelbrot;
 
-import com.isekario.util.ComplexNumber;
-import com.isekario.util.Util;
+import com.gmarshall.mandelbrot.util.ComplexNumber;
+import com.gmarshall.mandelbrot.util.Util;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JPanel;
 
-import static com.isekario.util.Util.*;
+import java.awt.Button;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+
+import static com.gmarshall.mandelbrot.util.Util.*;
 
 /**
  * Screen element to display all operations for the mandelbrot set
@@ -15,28 +21,30 @@ import static com.isekario.util.Util.*;
 public class Graph extends JPanel implements MouseListener, MouseMotionListener {
 
     public Graph() {
-        setLayout(null);
 
-        pixels = new Color[Main.getWIDTH()][Main.getHEIGHT()];
-        plotMandelbrot(pixels);
-
+        //region Buttons
         Button increaseIterations = new Button("Increase Iterations");
         Button decreaseIterations = new Button("Decrease Iterations");
         Button zoomIn = new Button("Zoom in");
         Button zoomOut = new Button("Zoom out");
 
-        increaseIterations.setBounds(Main.getWIDTH() - 300, 40, 150, 30);
-        decreaseIterations.setBounds(Main.getWIDTH() - 300, 70, 150, 30);
-        zoomIn.setBounds(Main.getWIDTH()/2 - 100, Main.getHEIGHT() - 70, 100, 20);
-        zoomOut.setBounds(Main.getWIDTH()/2, Main.getHEIGHT() - 70, 100, 20);
+        increaseIterations.setBounds(Util.SCREEN_WIDTH - 300, 40, 150, 30);
+        decreaseIterations.setBounds(Util.SCREEN_WIDTH - 300, 70, 150, 30);
+        zoomIn.setBounds(Util.SCREEN_WIDTH /2 - 100, Util.SCREEN_HEIGHT - 70, 100, 20);
+        zoomOut.setBounds(Util.SCREEN_WIDTH /2, Util.SCREEN_HEIGHT - 70, 100, 20);
 
         increaseIterations.addActionListener(e -> changeIterations(1, Graph.this));
         decreaseIterations.addActionListener(e -> changeIterations(-1, Graph.this));
         zoomIn.addActionListener(e -> zoomScreen(zoomValue, Graph.this));
         zoomOut.addActionListener(e -> zoomScreen(-zoomValue /2, Graph.this));
+        //endregion
 
+        pixels = new Color[Util.SCREEN_WIDTH][Util.SCREEN_WIDTH];
+
+        plotMandelbrot(pixels);
         reCalculateSequence();
 
+        setLayout(null);
         add(increaseIterations);
         add(decreaseIterations);
         add(zoomIn);
@@ -47,7 +55,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void paint(Graphics g) {
-        g.clearRect(0, 0, Main.getWIDTH(), Main.getHEIGHT());
+        g.clearRect(0, 0, Util.SCREEN_WIDTH, Util.SCREEN_HEIGHT);
         g.setFont(new Font("Arial", Font.PLAIN, 20));
 
         drawMandelbrot(g);
@@ -60,6 +68,8 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         drawIterationCount(g);
     }
 
+    //region Display
+
     /**
      * Displays the 2D graph
      * @param g -
@@ -68,18 +78,18 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         g.setColor(Color.DARK_GRAY);
 
         //X,Y axes
-        g.drawLine(0, gridCenterFocusY, Main.getWIDTH(), gridCenterFocusY);
-        g.drawLine(gridCenterFocusX, 0, gridCenterFocusX, Main.getHEIGHT());
+        g.drawLine(0, gridCenterY, Util.SCREEN_WIDTH, gridCenterY);
+        g.drawLine(gridCenterX, 0, gridCenterX, Util.SCREEN_HEIGHT);
 
         //X and Y intervals with numbers
         for (int i = -8; i < 9; i++) {
-            g.drawLine(gridCenterFocusX + i* zoomValue, gridCenterFocusY - intervalSize,
-                    gridCenterFocusX + i* zoomValue, gridCenterFocusY + intervalSize); //X
-            g.drawLine(gridCenterFocusX - intervalSize, gridCenterFocusY + i* zoomValue,
-                    gridCenterFocusX + intervalSize, gridCenterFocusY + i* zoomValue); //Y
+            g.drawLine(gridCenterX + i* zoomValue, gridCenterY - intervalSize,
+                    gridCenterX + i* zoomValue, gridCenterY + intervalSize); //X
+            g.drawLine(gridCenterX - intervalSize, gridCenterY + i* zoomValue,
+                    gridCenterX + intervalSize, gridCenterY + i* zoomValue); //Y
 
-            g.drawString(""+i, gridCenterFocusX + i* zoomValue + numberOffsetX, gridCenterFocusY + numberOffsetY); //X
-            g.drawString(""+-i, gridCenterFocusX + numberOffsetX, gridCenterFocusY + i* zoomValue + numberOffsetY); //Y
+            g.drawString(""+i, gridCenterX + i* zoomValue + numberOffsetX, gridCenterY + numberOffsetY); //X
+            g.drawString(""+-i, gridCenterX + numberOffsetX, gridCenterY + i* zoomValue + numberOffsetY); //Y
         }
     }
 
@@ -104,6 +114,15 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
     }
 
     /**
+     * Shows the current iterative depth of the sequence
+     * @param g -
+     */
+    private void drawIterationCount(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.drawString(iterationsMax + " iterations", Util.SCREEN_WIDTH - 300, 30);
+    }
+
+    /**
      * Draw all points in the sequence
      * @param g -
      */
@@ -118,6 +137,11 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
         }
     }
 
+    /**
+     * Draws the mandelbrot set
+     * All dark points  (representing the initial C point for the sequence) on the set result in stable orbits of the sequence
+     * @param g -
+     */
     private void drawMandelbrot(Graphics g) {
         for(int x = 0; x < pixels.length; x++)
             for(int y = 0; y < pixels[x].length; y++)
@@ -127,10 +151,9 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
             }
     }
 
-    private void drawIterationCount(Graphics g) {
-        g.setColor(Color.WHITE);
-        g.drawString(iterationsMax + " iterations", Main.getWIDTH() - 300, 30);
-    }
+    //endregion
+
+    //region Mouse events
 
     @Override
     public void mouseDragged(MouseEvent e) {
@@ -142,7 +165,6 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
             reCalculateSequence();
             Util.plotMandelbrot(pixels);
 
-            //paintImmediately(0, 0, Main.getWIDTH(), Main.getHEIGHT());
             repaint();
         }
         if(isCSelected)
@@ -152,7 +174,6 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
             reCalculateSequence();
 
-            //paintImmediately(0, 0, Main.getWIDTH(), Main.getHEIGHT());
             repaint();
         }
     }
@@ -169,7 +190,7 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void mousePressed(MouseEvent e) {
-        //did we click the red dot
+        //did we click the red dot or the green?
         isXSelected =   e.getX() >= zPosX - dotSize/2 &&
                         e.getX() <= zPosX + dotSize/2 &&
                         e.getY() >= zPosY - dotSize/2 &&
@@ -203,4 +224,6 @@ public class Graph extends JPanel implements MouseListener, MouseMotionListener 
     public void mouseExited(MouseEvent e) {
 
     }
+
+    //endregion
 }
