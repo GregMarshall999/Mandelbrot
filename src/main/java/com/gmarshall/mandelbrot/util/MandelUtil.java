@@ -52,8 +52,10 @@ public final class MandelUtil {
      * */
 
     /**
+     * /**
      * Checks if the value of C is part of the mandelbrot set
      * Depending on how deep we go, we may reach different certainties as to being part of the set or not
+     * @param Z - Starting point of the sequence (0+i0) or previous complex in the sequence
      * @param constant - Point we wish to test
      * @param iterationMax - How deep we go down the rabbit hole
      * @return - How certain we are that the sequence is stable
